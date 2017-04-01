@@ -62,17 +62,18 @@ public class StageRule extends HttpServlet {
                  
             //送信された値の取得
             request.setCharacterEncoding("UTF-8");
+            String userName = request.getParameter("userName");
             String stageName = request.getParameter("stageName");
             out.println("<h1>"+stageName+"の成績</h1>");
             
                     
            
             //データベース接続
-            String driverUrl = "jdbc:derby://localhost:1527/SplatoonVDR";
-            con = DriverManager.getConnection(driverUrl,"db","db");
+            String driverUrl = "jdbc:derby://localhost:1527/SplatoonRDB";
+            con = DriverManager.getConnection(driverUrl,"noya","db");
             
             stmt0 = con.createStatement();
-            String sql00 = "select * from SPR_DATA00 where STAGE='"+stageName+"'";
+            String sql00 = "select * from " + userName + " where STAGE='"+stageName+"'";
             ResultSet rs00 = stmt0.executeQuery(sql00);
             
             
@@ -104,7 +105,7 @@ public class StageRule extends HttpServlet {
             stmt1 = con.createStatement();
             
           
-            String sql01 = "select * from SPR_DATA00 where STAGE='"+stageName+"'";
+            String sql01 = "select * from " + userName + "where STAGE='"+stageName+"'";
             ResultSet rs01 = stmt1.executeQuery(sql01);
             
             out.println("<h2>"+stageName+"の成績一覧</h2>");
@@ -141,7 +142,17 @@ public class StageRule extends HttpServlet {
             
             
             out.println("<hr>");
-            out.println("<a href='/ap4_www/finalProject/topPage.html'>トップページへ戻る</a>");
+            //form使ってみてusername引き継ぎ？
+                out.println("<form name=\"userName引き継ぎ\" action=\"/SplatoonRecorde/RecordePage.jsp\" method=\"POST\">");
+                out.println("<input type=\"hidden\" name=\"userName\" value=\" "+ userName +" \">");
+                out.println("<input type=\"submit\" name=\"submitBtn\" value=\"選択ページへ戻る\"/>\n" +
+"        </form>");
+            
+            
+            out.println("<a href='/SplatoonRecorde/TopPage.html'>トップページへ戻る</a>");
+            
+            
+            
             out.println("</body>");
             out.println("</html>");
             

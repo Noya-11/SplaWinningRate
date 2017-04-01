@@ -38,11 +38,16 @@ public class UserNameConfir extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
-         PrintWriter out = response.getWriter();
+        PrintWriter out = response.getWriter();
 
         //コネクションとステートメントの宣言
         Connection con = null;
-        Statement stmt = null;
+        Statement stmt0 = null;
+        Statement stmt1 = null;
+        String users[] = new String[10000];
+        int count = 0;
+        boolean existFlag = true;
+        boolean matchFlag = false;
 
         try {
             out.println("<html>");
@@ -50,23 +55,22 @@ public class UserNameConfir extends HttpServlet {
             out.println("<title>Servlet SelectServlet</title>");
             out.println("</head>");
             out.println("<body>");
-            out.println("<h1>データーベースへ接続……</h1>");
+            out.println("<h1>ログインページ</h1>");
+            out.println("<hr><hr><br>");
 
             //WebアプリケーションのときはClass.forNameが必要
             Class.forName("org.apache.derby.jdbc.ClientDriver");
 
-                        
             //送信された値の取得
             request.setCharacterEncoding("UTF-8");
             String userName = request.getParameter("userName");
-            
-            
-           // try{
+
+            // try{
             //データベース接続
             String driverUrl = "jdbc:derby://localhost:1527/SplatoonRDB";
-            con = DriverManager.getConnection(driverUrl,"noya","db");
-            stmt = con.createStatement();
-        /*    
+            con = DriverManager.getConnection(driverUrl, "noya", "db");
+            stmt0 = con.createStatement();
+            /*    
             //最後のdata_id取得する
             String sql00 = "select max(user_id)as MAXID from USER_ACCOUNT";
             ResultSet rs = stmt.executeQuery(sql00);
@@ -76,32 +80,72 @@ public class UserNameConfir extends HttpServlet {
             }
             INSERT INTO NOYA.USER_ACCOUNT(USER_ID,USER_NAME) VALUES (0,'testUser');
             
-          */  
-        
-            String sql00 ="select * from NOYA.USER_ACCOUNT sales where USER_NAME like '"+userName +"'";
-            ResultSet rs = stmt.executeQuery(sql00);
-            int count =stmt.executeUpdate(sql00);
-            rs.close();
-            
-            
-            
-            out.println("<h2>戦績ぺージへ移動します。</h2>");
-            out.println("<h2></h2>");
-            
-            out.println("<hr>");
-            out.println("<a href='/ap4_www/finalProject/topPage.html'>トップページへ戻る</a>");
-            out.println("</body>");
-            out.println("</html>");
+             */
 
+            stmt1 = con.createStatement();
+            String sql01 = "select * from USER_ACCOUNT";
+            ResultSet rs01 = stmt1.executeQuery(sql01);
+
+            while (rs01.next()) {
+                String userNameInData = rs01.getString("USER_NAME");
+                users[count] = userNameInData;
+                out.println(users[count] + "<br>");
+                count++;
+
+            }
+            
+            out.println("<hr><br><br>");
+
+            for (int i = 0; i < users.length; i++) {
+                if (userName.equals(users[i])) { // 既に使用されている場合。
+
+                    matchFlag = true;
+
+                } else {
+                    existFlag = false;
+
+                }
+            }
+
+            if (!matchFlag && !existFlag) {
+                out.println("入力されたユーザー名は存在していません。");
+                out.println("<a href='/SplatoonRecorde/TopPage.html'>トップぺージへ</a>");
+
+            } else {
+
+                out.println("<b>こんにちは、" + userName + "さん</b>");
+                
+                //form使ってみてusername引き継ぎ？
+                out.println("<form name=\"確認ページ\" action=\"/SplatoonRecorde/InputPage.jsp\" method=\"POST\">");
+                out.println("<input type=\"hidden\" name=\"userName\" value=\" "+ userName +" \">");
+                out.println("<input type=\"submit\" name=\"submitBtn\" value=\"戦績ページへ\"/>\n" +
+"        </form>");
+                
+                
+                //out.println("<a href='/SplatoonRecorde/InputPage.html'>成績ぺージへ</a>");
+
+                out.println("<hr><hr>");
+               
+                out.println("<a href='/SplatoonRecorde/TopPage.html'>トップページへ戻る</a>");
+                out.println("</body>");
+                out.println("</html>");
+            }
         } catch (Exception e) {
             //サーブレット内での例外をアプリケーションのエラーとして表示
             out.println(e); // ブラウザ上に出力
             throw new ServletException(e);
         } finally {
             //例外が発生したときでも確実にデータベースから切断
-            if (stmt != null) {
+            if (stmt0 != null) {
                 try {
-                    stmt.close();
+                    stmt0.close();
+                } catch (SQLException e) {
+                    throw new ServletException(e);
+                }
+            }
+            if (stmt1 != null) {
+                try {
+                    stmt1.close();
                 } catch (SQLException e) {
                     throw new ServletException(e);
                 }
