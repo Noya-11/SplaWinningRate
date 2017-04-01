@@ -58,6 +58,7 @@ public class DataManage extends HttpServlet {
                         
             //送信された値の取得
             request.setCharacterEncoding("UTF-8");
+            String userName = request.getParameter("userName");
             String rule = request.getParameter("rule");
             String stageName = request.getParameter("stageName");
             String kill = request.getParameter("kill");
@@ -77,21 +78,23 @@ public class DataManage extends HttpServlet {
             VorDString ="負け";
             }
             
+            
+            out.println(userName);
            // try{
             //データベース接続
-            String driverUrl = "jdbc:derby://localhost:1527/SplatoonVDR";
-            con = DriverManager.getConnection(driverUrl,"db","db");
+            String driverUrl = "jdbc:derby://localhost:1527/SplatoonRDB";
+            con = DriverManager.getConnection(driverUrl,"noya","db");
             stmt = con.createStatement();
             
             //最後のdata_id取得する
-            String sql00 = "select max(data_id)as MAXID from SPR_DATA00";
+            String sql00 = "select max(data_id)as MAXID from " + userName;
             ResultSet rs = stmt.executeQuery(sql00);
             int maxID = 0;
             if(rs.next()){
             maxID = rs.getInt("MAXID")+1;
             }
             
-            String sql01 ="insert into SPR_DATA00 values("+maxID+",'"+rule+"','"+stageName+"',"+kill+","+death+","+mineC+","+oppC+","+VorD+")";
+            String sql01 ="insert into "+ userName +" values("+maxID+",'"+rule+"','"+stageName+"',"+kill+","+death+","+mineC+","+oppC+","+VorD+")";
             int count =stmt.executeUpdate(sql01);
             rs.close();
             
@@ -99,7 +102,14 @@ public class DataManage extends HttpServlet {
             
             
             out.println("<hr>");
-            out.println("<a href='/ap4_www/finalProject/topPage.html'>トップページへ戻る</a>");
+            
+            //form使ってみてusername引き継ぎ？
+                out.println("<form name=\"確認ページ\" action=\"/SplatoonRecorde/InputPage.jsp\" method=\"POST\">");
+                out.println("<input type=\"hidden\" name=\"userName\" value=\" "+ userName +" \">");
+                out.println("<input type=\"submit\" name=\"submitBtn\" value=\"データ入力ページへ戻る\"/>\n" +
+"        </form>");
+            
+            
             out.println("</body>");
             out.println("</html>");
 
